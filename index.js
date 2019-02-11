@@ -21,7 +21,7 @@ app.get('/api/persons', (req, res) => {
 })
 
 app.get('/api/persons/:id', (req, res, next) => {
-    Person.find(req.params.id)
+    Person.findById(req.params.id)
         .then(person => {
             if (person) {
                 res.json(person.toJSON())
@@ -34,7 +34,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 
 app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndRemove(req.params.id)
-        .then(result => {
+        .then(() => {
             res.status(204).end()
         })
         .catch(error => next(error))
@@ -77,14 +77,16 @@ app.put('/api/persons/:id', (req, res, next) => {
 })
 
 app.get('/info', (req, res) => {
-    var d = new Date();
-    var ds = d.toString();
+    var d = new Date()
+    var ds = d.toString()
 
-    res.send(
-        `<div>
-        <p>Puhelinluettelossa on ${persons.length} henkilön tiedot</p>
-        <p>${ds}</p>
-        </div>`)
+    Person.find({}).then(persons => {
+        res.send(
+            `<div>
+            <p>Puhelinluettelossa on ${persons.length} henkilön tiedot</p>
+            <p>${ds}</p>
+            </div>`)
+    })
 })
 
 const errorHandler = (error, req, res, next) => {
@@ -94,6 +96,8 @@ const errorHandler = (error, req, res, next) => {
     } else if (error.name === 'ValidatorError') {
         return res.status(400).json({ error: error.message })
     }
+
+    next(error)
 }
 
 app.use(errorHandler)
